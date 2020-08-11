@@ -3,7 +3,6 @@ FROM ubuntu:18.04 as baseline
 MAINTAINER Nachiket Kapre <nachiket@uwaterloo.ca>
  
 ENV DEBIAN_FRONTEND=noninteractive
-ENV PATH="/opt/altera18.1/modelsim_ase/linux:/opt/Xilinx/Vivado/2018.3/bin:${PATH}
 # install dependences for Vivado and Modelsim:
 # Vivado compile quit after ~30 mins failing to find libxtst6
 RUN apt-get update && apt-get install -y \
@@ -12,7 +11,6 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   git \
   bash \
-  zsh \
   libxtst6 \
   libglib2.0-0 \
   libsm6 \
@@ -28,9 +26,6 @@ RUN apt-get update && apt-get install -y \
   unzip \
   tmux \
   python-numpy
- 
-RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
-COPY .zshrc /root
  
 # setup modelsim ase
 FROM baseline as modelsim
@@ -59,13 +54,11 @@ COPY freetype.sh /
 RUN chmod 755 /freetype.sh
 RUN /freetype.sh
  
-FROM modelsim1 as sim-only
+#FROM modelsim1 as sim-only
 # Setting up user
 ARG USER_NAME=elec3608
 RUN adduser --disabled-password --gecos '' ${USER_NAME}
 USER ${USER_NAME}
 WORKDIR /home/${USER_NAME}
-RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
-COPY .zshrc /home/${USER_NAME}
 COPY .bashrc /home/${USER_NAME}
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT [ "/bin/bash", "-l", "-c" ]
